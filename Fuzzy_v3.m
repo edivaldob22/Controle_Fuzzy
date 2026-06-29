@@ -1,29 +1,29 @@
 % =========================================================================
-% PROJETO UC INTELIG NCIA ARTIFICIAL - Engenharia de Controle e AutomaÁ„o
-% SIMULA«√O DE CONTROLE ATIVO DE VIBRA«√O VIA L”GICA FUZZY (VIGA ENGASTADA)
+% PROJETO UC INTELIG√äNCIA ARTIFICIAL - Engenharia de Controle e Automa√ß√£o
+% SIMULA√á√ÉO DE CONTROLE ATIVO DE VIBRA√á√ÉO VIA L√ìGICA FUZZY (VIGA ENGASTADA)
 % =========================================================================
 clear; clc; close all;
 
-%% 1. PARAMETRIZA«√O E MATRIZES EM ESPA«O DE ESTADOS (MODELO CONTÕNUO)
-% Par‚metros din‚micos baseados no 1∫ modo de vibraÁ„o (10 Hz, 1% amortecimento)
+%% 1. PARAMETRIZA√á√ÉO E MATRIZES EM ESPA√áO DE ESTADOS (MODELO CONT√çNUO)
+% Par√¢metros din√¢micos baseados no 1¬∫ modo de vibra√ß√£o (10 Hz, 1% amortecimento)
 A = [0 1; -3948 -1.26];
 Bu = [0; 5.2];    % Matriz de entrada do Atuador de Controle
-Bw = [0; 2.5];    % Matriz de entrada do Dist˙rbio (Motor)
+Bw = [0; 2.5];    % Matriz de entrada do Dist√∫rbio (Motor)
 Buw = [Bu, Bw];
-C = [12.5 0; -7896 -2.52]; % SaÌdas: [1] ExtensÙmetro (Base), [2] AcelerÙmetro (Ponta)
+C = [12.5 0; -7896 -2.52]; % Sa√≠das: [1] Extens√¥metro (Base), [2] Aceler√¥metro (Ponta)
 Du = [0; 10.4];
 Dw = [0; 5.0];
 Duw = [Du, Dw];
 
-%% 2. DISCRETIZA«√O DO SISTEMA (SimulaÁ„o de Controle Digital)
-dt = 0.002; % Passo de amostragem de 2 ms (FrequÍncia de amostragem de 500 Hz)
+%% 2. DISCRETIZA√á√ÉO DO SISTEMA (Simula√ß√£o de Controle Digital)
+dt = 0.002; % Passo de amostragem de 2 ms (Frequ√™ncia de amostragem de 500 Hz)
 
 B_total = [Bu Bw];
 D_total = [Du Dw];
 sys_continuo = ss(A, B_total, C, D_total);
-sys_discreto = c2d(sys_continuo, dt, 'zoh'); % DiscretizaÁ„o por Zero-Order Hold
+sys_discreto = c2d(sys_continuo, dt, 'zoh'); % Discretiza√ß√£o por Zero-Order Hold
 
-% ExtraÁ„o das matrizes discretas
+% Extra√ß√£o das matrizes discretas
 Ad = sys_discreto.A;
 Bd_u = sys_discreto.B(:,1);
 Bd_w = sys_discreto.B(:,2);
@@ -31,12 +31,12 @@ Cd = sys_discreto.C;
 Dd_u = sys_discreto.D(:,1);
 Dd_w = sys_discreto.D(:,2);
 
-%% 3. CRIA«√O PROGRAM¡TICA DO CONTROLADOR FUZZY (5 CONJUNTOS - FASE CORRIGIDA)
+%% 3. CRIA√á√ÉO PROGRAM√ÅTICA DO CONTROLADOR FUZZY (5 CONJUNTOS - FASE CORRIGIDA)
 fis = newfis('ControleVibracao5Regras');
 
-% Mapeamento exato de Õndices: 1=NG, 2=NP, 3=Z, 4=PP, 5=PG
+% Mapeamento exato de √çndices: 1=NG, 2=NP, 3=Z, 4=PP, 5=PG
 
-% Entrada 1: DeformaÁ„o 
+% Entrada 1: Deforma√ß√£o 
 fis = addvar(fis, 'input', 'Deformacao', [-20 20]);
 fis = addmf(fis, 'input', 1, 'NG', 'trimf', [-20 -20 -10]);
 fis = addmf(fis, 'input', 1, 'NP', 'trimf', [-15 -6 0]);
@@ -44,7 +44,7 @@ fis = addmf(fis, 'input', 1, 'Z',  'trimf', [-2 0 2]);
 fis = addmf(fis, 'input', 1, 'PP', 'trimf', [0 6 15]);
 fis = addmf(fis, 'input', 1, 'PG', 'trimf', [10 20 20]);
 
-% Entrada 2: AceleraÁ„o
+% Entrada 2: Acelera√ß√£o
 fis = addvar(fis, 'input', 'Aceleracao', [-15000 15000]);
 fis = addmf(fis, 'input', 2, 'NG', 'trimf', [-15000 -15000 -5000]);
 fis = addmf(fis, 'input', 2, 'NP', 'trimf', [-8000 -3000 0]);
@@ -52,7 +52,7 @@ fis = addmf(fis, 'input', 2, 'Z',  'trimf', [-1000 0 1000]);
 fis = addmf(fis, 'input', 2, 'PP', 'trimf', [0 3000 8000]);
 fis = addmf(fis, 'input', 2, 'PG', 'trimf', [5000 15000 15000]);
 
-% SaÌda: Controle
+% Sa√≠da: Controle
 fis = addvar(fis, 'output', 'Controle', [-40 40]);
 fis = addmf(fis, 'output', 1, 'NG', 'trimf', [-40 -40 -20]);
 fis = addmf(fis, 'output', 1, 'NP', 'trimf', [-25 -12 0]);
@@ -60,37 +60,37 @@ fis = addmf(fis, 'output', 1, 'Z',  'trimf', [-1 0 1]);
 fis = addmf(fis, 'output', 1, 'PP', 'trimf', [0 12 25]);
 fis = addmf(fis, 'output', 1, 'PG', 'trimf', [20 40 40]);
 
-% BASE DE REGRAS CRUCIAL: Invers„o de Sinais para RealimentaÁ„o Negativa
+% BASE DE REGRAS CRUCIAL: Invers√£o de Sinais para Realimenta√ß√£o Negativa
 % Linha: [Entrada1_Deformacao  Entrada2_Aceleracao  Saida_Controle  Peso  Operador]
 regras = [
-    5 0 1 1 1; % Se Deformacao È PG (5) Ent„o Controle È NG (1) -> ANTI-FASE
-    4 0 2 1 1; % Se Deformacao È PP (4) Ent„o Controle È NP (2) -> ANTI-FASE
-    1 0 5 1 1; % Se Deformacao È NG (1) Ent„o Controle È PG (5) -> ANTI-FASE
-    2 0 4 1 1; % Se Deformacao È NP (2) Ent„o Controle È PP (4) -> ANTI-FASE
-    3 3 3 1 1  % Se ambas s„o Z (3) Ent„o Controle È Z (3) -> EquilÌbrio
+    5 0 1 1 1; % Se Deformacao √© PG (5) Ent√£o Controle √© NG (1) -> ANTI-FASE
+    4 0 2 1 1; % Se Deformacao √© PP (4) Ent√£o Controle √© NP (2) -> ANTI-FASE
+    1 0 5 1 1; % Se Deformacao √© NG (1) Ent√£o Controle √© PG (5) -> ANTI-FASE
+    2 0 4 1 1; % Se Deformacao √© NP (2) Ent√£o Controle √© PP (4) -> ANTI-FASE
+    3 3 3 1 1  % Se ambas s√£o Z (3) Ent√£o Controle √© Z (3) -> Equil√≠brio
 ];
 fis = addrule(fis, regras);
 
-%% 4. LOOP DE SIMULA«√O COMPUTACIONAL
-t = 0:dt:5; % Vetor de tempo: 4 segundos de simulaÁ„o
+%% 4. LOOP DE SIMULA√á√ÉO COMPUTACIONAL
+t = 0:dt:5; % Vetor de tempo: 5 segundos de simula√ß√£o
 N = length(t);
 
-% GeraÁ„o do Dist˙rbio do Motor monitorado via Encoder
-% ForÁa o sistema na frequÍncia de Resson‚ncia exata da viga (~10 Hz -> W = 62.83 rad/s)
+% Gera√ß√£o do Dist√∫rbio do Motor monitorado via Encoder
+% For√ßa o sistema na frequ√™ncia de Resson√¢ncia exata da viga (~10 Hz -> W = 62.83 rad/s)
 w = 1.8 * sin(62.83 * t); 
 
-% --- Cen·rio 1: Malha Aberta (Sem Controle Fuzzy, u = 0) ---
+% --- Cen√°rio 1: Malha Aberta (Sem Controle Fuzzy, u = 0) ---
 x_ma = [0; 0];          % Vetor de estados inicial [deslocamento_modal; velocidade_modal]
-y_ma = zeros(2, N);     % Armazena as saÌdas dos sensores
+y_ma = zeros(2, N);     % Armazena as sa√≠das dos sensores
 for k = 1:N
-    % Leitura instant‚nea dos sensores teÛricos
+    % Leitura instant√¢nea dos sensores te√≥ricos
     y_ma(:, k) = Cd * x_ma + Dd_w * w(k);
     
-    % AtualizaÁ„o do estado fÌsico da viga (Apenas sob efeito do motor)
+    % Atualiza√ß√£o do estado f√≠sico da viga (Apenas sob efeito do motor)
     x_ma = Ad * x_ma + Bd_w * w(k);
 end
 
-% --- Cen·rio 2: Malha Fechada ---
+% --- Cen√°rio 2: Malha Fechada ---
 x_mf = [0; 0];          
 y_mf = zeros(2, N);     
 u = zeros(1, N);        
@@ -108,68 +108,68 @@ for k = 1:N
     x_mf = Ad * x_mf + Bd_u * u(k) + Bd_w * w(k);
 end
 
-%% 5. APRESENTA«√O E AN¡LISE GR¡FICA DOS CONJUNTOS
+%% 5. APRESENTA√á√ÉO E AN√ÅLISE GR√ÅFICA DOS CONJUNTOS
 
-% 1. Gr·fico para a Primeira Entrada (Sensor de DeformaÁ„o)
-figure('Name', 'FunÁıes de PertinÍncia - DeformaÁ„o');
+% 1. Gr√°fico para a Primeira Entrada (Sensor de Deforma√ß√£o)
+figure('Name', 'Fun√ß√µes de Pertin√™ncia - Deforma√ß√£o');
 plotmf(fis, 'input', 1);
 set(findobj(gca, 'Type', 'line'), 'LineWidth', 2);
-title('Conjuntos Fuzzy: Sensor de DeformaÁ„o (\epsilon)');
+title('Conjuntos Fuzzy: Sensor de Deforma√ß√£o (\epsilon)');
 xlabel('Universo de Discurso (Entrada 1)');
-ylabel('Grau de PertinÍncia (\mu)');
+ylabel('Grau de Pertin√™ncia (\mu)');
 grid on;
 
-% 2. Gr·fico para a Segunda Entrada (AcelerÙmetro)
-figure('Name', 'FunÁıes de PertinÍncia - AceleraÁ„o');
+% 2. Gr√°fico para a Segunda Entrada (Aceler√¥metro)
+figure('Name', 'Fun√ß√µes de Pertin√™ncia - Acelera√ß√£o');
 plotmf(fis, 'input', 2);
 set(findobj(gca, 'Type', 'line'), 'LineWidth', 2);
-title('Conjuntos Fuzzy: Sensor de AceleraÁ„o (mm/s≤)');
+title('Conjuntos Fuzzy: Sensor de Acelera√ß√£o (mm/s¬≤)');
 xlabel('Universo de Discurso (Entrada 2)');
-ylabel('Grau de PertinÍncia (\mu)');
+ylabel('Grau de Pertin√™ncia (\mu)');
 grid on;
 
-% 3. Gr·fico para a SaÌda (Atuador de Controle)
-figure('Name', 'FunÁıes de PertinÍncia - Atuador');
+% 3. Gr√°fico para a Sa√≠da (Atuador de Controle)
+figure('Name', 'Fun√ß√µes de Pertin√™ncia - Atuador');
 plotmf(fis, 'output', 1);
 set(findobj(gca, 'Type', 'line'), 'LineWidth', 2);
-title('Conjuntos Fuzzy: EsforÁo de Controle do Atuador (u)');
-xlabel('Universo de Discurso (SaÌda)');
-ylabel('Grau de PertinÍncia (\mu)');
+title('Conjuntos Fuzzy: Esfor√ßo de Controle do Atuador (u)');
+xlabel('Universo de Discurso (Sa√≠da)');
+ylabel('Grau de Pertin√™ncia (\mu)');
 grid on;
 
-%% 5. APRESENTA«√O E AN¡LISE GR¡FICA DOS RESULTADOS
+%% 5. APRESENTA√á√ÉO E AN√ÅLISE GR√ÅFICA DOS RESULTADOS
 figure('Name', 'Resultados do Controle Ativo Fuzzy', 'NumberTitle', 'off');
 
-% Subplot 1: Sensor de DeformaÁ„o (Ponte de ExtensÙmetros)
+% Subplot 1: Sensor de Deforma√ß√£o (Ponte de Extens√¥metros)
 subplot(2,1,1);
 plot(t, y_ma(1,:), 'r', 'LineWidth', 1.2); hold on;
 plot(t, y_mf(1,:), 'b', 'LineWidth', 1.5);
 grid on;
-title('Resposta do Sensor de DeformaÁ„o (Ponte de ExtensÙmetros na Base)');
+title('Resposta do Sensor de Deforma√ß√£o (Ponte de Extens√¥metros na Base)');
 xlabel('Tempo (s)');
-ylabel('Tens„o Equivalente / DeformaÁ„o (\epsilon)');
+ylabel('Tens√£o Equivalente / Deforma√ß√£o (\epsilon)');
 legend('Malha Aberta (Sem Controle)', 'Malha Fechada (Controle Fuzzy)');
 
-% Subplot 2: Sensor de AceleraÁ„o (AcelerÙmetro na Ponta)
+% Subplot 2: Sensor de Acelera√ß√£o (Aceler√¥metro na Ponta)
 subplot(2,1,2);
 plot(t, y_ma(2,:), 'r', 'LineWidth', 1.2); hold on;
 plot(t, y_mf(2,:), 'b', 'LineWidth', 1.5);
 grid on;
-title('Resposta do AcelerÙmetro (Extremidade Livre da Viga)');
+title('Resposta do Aceler√¥metro (Extremidade Livre da Viga)');
 xlabel('Tempo (s)');
-ylabel('AceleraÁ„o (mm/s≤)');
+ylabel('Acelera√ß√£o (mm/s¬≤)');
 legend('Malha Aberta (Sem Controle)', 'Malha Fechada (Controle Fuzzy)');
 
-% C·lculo da eficiÍncia de mitigaÁ„o em Regime Permanente (⁄ltimo 1 segundo)
+% C√°lculo da efici√™ncia de mitiga√ß√£o em Regime Permanente (√öltimo 1 segundo)
 idx_regime = t > 3.0;
 rms_ma = rms(y_ma(2, idx_regime));
 rms_mf = rms(y_mf(2, idx_regime));
 atenuacao_pct = (1 - (rms_mf / rms_ma)) * 100;
 
 fprintf('====================================================\n');
-fprintf('AN¡LISE DE DESEMPENHO DO CONTROLADOR FUZZY (SIMULA«√O)\n');
+fprintf('AN√ÅLISE DE DESEMPENHO DO CONTROLADOR FUZZY (SIMULA√á√ÉO)\n');
 fprintf('====================================================\n');
-fprintf('AceleraÁ„o RMS em Malha Aberta: %.2f mm/s≤\n', rms_ma);
-fprintf('AceleraÁ„o RMS em Malha Fechada: %.2f mm/s≤\n', rms_mf);
-fprintf('AtenuaÁ„o percentual de vibraÁ„o obtida: %.2f%%\n', atenuacao_pct);
+fprintf('Acelera√ß√£o RMS em Malha Aberta: %.2f mm/s¬≤\n', rms_ma);
+fprintf('Acelera√ß√£o RMS em Malha Fechada: %.2f mm/s¬≤\n', rms_mf);
+fprintf('Atenua√ß√£o percentual de vibra√ß√£o obtida: %.2f%%\n', atenuacao_pct);
 fprintf('====================================================\n');
